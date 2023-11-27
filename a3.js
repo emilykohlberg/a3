@@ -312,9 +312,9 @@ function renderGraph(data) {
             tooltip.transition()
               .duration(200)
               .style("opacity", 0.9);
-            tooltip.html(pt["track_name"] + " by " + pt["artist(s)_name"] + ": " + pt["streams"] + " streams") 
-              .style("left", (d.clientX - 125) + "px")
-              .style("top", (d.clientY + 10) + "px");
+            tooltip.html(tooltipHTML(pt)) 
+              .style("left", (d.clientX - 260) + "px")
+              .style("top", (d.clientY - 300) + "px");
         })
         .on("mouseout", function(d) {
         tooltip.transition()
@@ -349,4 +349,49 @@ function renderGraph(data) {
       .style("text-anchor", "middle")
       .text("Streams");
   
+}
+
+function tooltipHTML (pt) {
+    return `<div>
+        <p>
+        ${pt["track_name"]} by ${pt["artist(s)_name"]}
+        </p>
+        <p>
+        ${pt["streams"]} streams
+        </p>
+        <p>
+        Released on ${pt["released_month"]}/${pt["released_day"]}/${pt["released_year"]}
+        </p>
+        <p>
+        BPM: ${pt["bpm"]}
+        </p>
+        <p>
+        Key: ${pt["key"]}
+        </p>
+        <p>
+        Mode: ${pt["mode"]}
+        </p>
+        <p>
+        Danceability: ${pt["danceability_%"]}%
+        </p>
+        <p>
+        Valence: ${pt["valence_%"]}%
+        </p>
+        <p>
+        Energy: ${pt["energy_%"]}%
+        </p>
+        <p>
+        Acousticness: ${pt["acousticness_%"]}%
+        </p>
+        <p>
+        Instrumentalness: ${pt["instrumentalness_%"]}%
+        </p>
+        <p>
+        Liveness: ${pt["liveness_%"]}%
+        </p>
+        <p>
+        Speechiness: ${pt["speechiness_%"]}%
+        </p>
+    </div>`
+
 }
