@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+  /* svg {
+  	width: 1200px;
+  	height: 600px;
+    margin-left: 100px;
+    margin-bottom: 50px;
+  } */
+
+  .tooltip {
+    position: fixed;
+    width: 250px;
+    height: fit-content;
+    pointer-events: none;
+    background-color: rgb(255, 223, 228);
+    padding: 3px;
+    border: 1px rgb(255, 149, 167) solid;
+
+  }
+</style>
+<script src="htmlGenerate.js"></script>
+
+
+<body>
+  <h1>Spotify Stats</h1>
+
+  <div>
+    <label for="songDropdown">Select Song:</label>
+    <select id="songDropdown"></select>
+    <button onclick="filterSong()">Filter</button>
+  </div>
+
+  <div>
+    <label for="artistDropdown">Select Artist:</label>
+    <select id="artistDropdown"></select>
+    <button onclick="filterArtist()">Filter</button>
+  </div>
+
+  <div id="sliders">
+  </div>
+
+  <div id="svgContainer">
+  </div>
+  <div>
+    <label for="xAxisDropdown">Select X Axis:</label>
+    <select id="xAxisDropdown"></select>
+    <button onclick="changeXAxis()">Change X Axis</button>
+  </div>
+
+
+</body>
+
+<script>
+  window.onload = function() {
+    createSliders();
+  };
+</script>
+
+<script src="http://d3js.org/d3.v6.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+<script src="a3.js"></script>
+
+
+</html>
