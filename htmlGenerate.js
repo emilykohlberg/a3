@@ -25,19 +25,17 @@ var headerMapping = {
     "speechiness_%": "Speechiness Percentage"
 };
 
-function createSliders () {
-
-    var categories = 
+var categories = 
         ["released_year",
         "artist_count", 
-        "in_spotify_playlists",
-        "in_spotify_charts",
+        // "in_spotify_playlists",
+        // "in_spotify_charts",
         "streams",
-        "in_apple_playlists",
-        "in_apple_charts",
-        "in_deezer_playlists",
-        "in_deezer_charts",
-        "in_shazam_charts",
+        // "in_apple_playlists",
+        // "in_apple_charts",
+        // "in_deezer_playlists",
+        // "in_deezer_charts",
+        // "in_shazam_charts",
         "bpm",
         "danceability_%",
         "valence_%",
@@ -47,6 +45,8 @@ function createSliders () {
         "liveness_%",
         "speechiness_%"]
 
+function createSliders () {
+
     var html = `<div>`
 
     categories.forEach(function(c) {
@@ -55,9 +55,9 @@ function createSliders () {
         var sliderName = (c + 'Slider').replace('%', '');
 
         html = html + `
-                    <div>
+                    <div class="inputContainer">
                         <label for="${labelName}Label">${headerMapping[c]} Range:</label>
-                        <input type="text" id="${labelName}" readonly style="border:0;
+                        <input class="rangeLabel" type="text" id="${labelName}" readonly style="border:0;
                         color:#f6931f; font-weight:bold;">
                         <div id="${sliderName}" class="slider-range"></div>
                     </div>

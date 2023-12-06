@@ -1,6 +1,7 @@
 var dataset;
 var filteredData;
 var xAxis = "released_year";
+var allGraphs = false;
 
 function cpy (a) {
     return JSON.parse(JSON.stringify(a));
@@ -38,14 +39,14 @@ var filters = {
         "artist(s)_name": [],
         "released_year": [],
         "artist_count": [], 
-        "in_spotify_playlists": [],
-        "in_spotify_charts": [],
+        // "in_spotify_playlists": [],
+        // "in_spotify_charts": [],
         "streams": [],
-        "in_apple_playlists": [],
-        "in_apple_charts": [],
-        "in_deezer_playlists": [],
-        "in_deezer_charts": [],
-        "in_shazam_charts": [],
+        // "in_apple_playlists": [],
+        // "in_apple_charts": [],
+        // "in_deezer_playlists": [],
+        // "in_deezer_charts": [],
+        // "in_shazam_charts": [],
         "bpm": [],
         "danceability_%": [],
         "valence_%" : [],
@@ -59,14 +60,14 @@ var filters = {
 var xAxisOptions = 
             [ "released_year",
             "artist_count",
-            "in_spotify_playlists",
-            "in_spotify_charts",
-            "streams",
-            "in_apple_playlists",
-            "in_apple_charts",
-            "in_deezer_playlists",
-            "in_deezer_charts",
-            "in_shazam_charts",
+            // "in_spotify_playlists",
+            // "in_spotify_charts",
+            // "streams",
+            // "in_apple_playlists",
+            // "in_apple_charts",
+            // "in_deezer_playlists",
+            // "in_deezer_charts",
+            // "in_shazam_charts",
             "bpm",
             "danceability_%",
             "valence_%",
@@ -148,7 +149,10 @@ function populateFilters() {
     // sliders
     (function() {
 
-        xAxisOptions.forEach(function(c) {
+        Object.keys(filters).forEach(function(c) {
+            if (c === "artist(s)_name" || c === "track_name"){
+                return;
+            }
             var tempData = dataset.map(function(row) {
                 return parseInt(row[c]);
             });
@@ -174,8 +178,14 @@ function populateFilters() {
 }
 
 function changeXAxis() {
+    allGraphs = false;
     xAxis = d3.select('#xAxisDropdown').node().value;
     renderGraph(filteredData);
+}
+
+function viewAllGraphs() {
+    allGraphs = true;
+    renderGraph(filteredData)
 }
 
 
@@ -212,6 +222,7 @@ function filterSong() {
 }
 
 function filterArtist() {
+    // console.log(d3.select('#artistDropdown').node().value)
     var myA = d3.select('#artistDropdown').node().value;
     setFilter("artist(s)_name", [myA]);
 }
@@ -219,6 +230,73 @@ function filterArtist() {
 function setFilter(c, myVal) {
     filters[c] = myVal;
     applyFilters();
+}
+
+function adjustFilters(song){
+    // console.log("adjust filters")
+    console.log(song)
+    Object.keys(filters).forEach(function(f) {
+        if (f !== "artist(s)_name" && f !== "track_name" && f !== "streams" && f !== "artist_count" && f !== "released_year"){
+            if(f === "artist_count"){
+                var tempData = dataset.map(function(row) {
+                    return parseInt(row[f]);
+                });
+                var absMin = d3.min(tempData);
+                var absMax = d3.max(tempData);
+                if (song[f] === 1){
+                    var vals = [1, 2];
+                }
+                else {
+                   var vals = [2, absMax]
+                }
+                console.log(f)
+                $(`#${f}Slider`.replace('%', '')).slider({
+                    range: true,
+                    min: absMin,
+                    max: absMax,
+                    values: vals,
+                    slide: function(event, ui) {
+                    $(`#${f}Label`.replace('%', '')).val(ui.values[0] + " - " + ui.values[1]);
+                    setFilter(f, ui.values);
+                    }
+                });
+                $(`#${f}Label`.replace('%', '')).val($(`#${f}Slider`.replace('%', '')).slider("values", 0) +
+                        " - " + $(`#${f}Slider`.replace('%', '')).slider("values", 1));
+                // console.log(f)
+                setFilter(f, vals);
+            }
+            else {
+                if (f === "streams"){
+                    var range = 100000;
+                }
+                else {
+                    var range = 25;
+                }
+       
+                var tempData = dataset.map(function(row) {
+                    return parseInt(row[f]);
+                });
+                var absMin = d3.min(tempData);
+                var absMax = d3.max(tempData);
+                var vals = [Math.max(song[f] - range, absMin), Math.min(song[f] + range, absMax)]
+                $(`#${f}Slider`.replace('%', '')).slider({
+                    range: true,
+                    min: absMin,
+                    max: absMax,
+                    values: vals,
+                    slide: function(event, ui) {
+                    $(`#${f}Label`.replace('%', '')).val(ui.values[0] + " - " + ui.values[1]);
+                    setFilter(f, ui.values);
+                    }
+                });
+                $(`#${f}Label`.replace('%', '')).val($(`#${f}Slider`.replace('%', '')).slider("values", 0) +
+                        " - " + $(`#${f}Slider`.replace('%', '')).slider("values", 1));
+                // console.log(f)
+                setFilter(f, vals);
+            }
+        }
+    })  
+
 }
 
 function renderTable(data) {
@@ -265,25 +343,44 @@ function renderTable(data) {
 function renderGraph(data) {
 
     var svgContainer = d3.select('#svgContainer');
-    svgContainer.select('svg').remove();
-
-    var svgWidth = 1200;
-    var svgHeight = 600;
-
-    // console.log(xAxis)
-    // console.log(data)
-
-    // console.log([d3.min(data, d => d[xAxis]) ,d3.max(data, d => d[xAxis])])
-
-    var margin = { top: 20, right: 20, bottom: 50, left: 100 };
-    var width = svgWidth - margin.left - margin.right;
-    var height = svgHeight - margin.top - margin.bottom;
+    svgContainer.selectAll('svg').remove();
 
     var tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0)
-        .style("z-index", 2);
+            .attr("class", "tooltip")
+            .style("opacity", 0)
+            .style("z-index", 2);
 
+    if (allGraphs) {
+       
+        var svgWidth = 500;
+        var svgHeight = 275;
+
+        var margin = { top: 20, right: 20, bottom: 50, left: 100 };
+        var width = svgWidth - margin.left - margin.right;
+        var height = svgHeight - margin.top - margin.bottom;
+
+        xAxisOptions.forEach(function(graph) {
+            drawGraph(filteredData, tooltip, svgContainer, svgWidth, svgHeight, margin, width, height, graph);
+        })
+
+    }
+    else {
+        
+        var svgWidth = 1000;
+        var svgHeight = 550;
+
+        var margin = { top: 20, right: 20, bottom: 50, left: 100 };
+        var width = svgWidth - margin.left - margin.right;
+        var height = svgHeight - margin.top - margin.bottom;
+
+        drawGraph(data, tooltip, svgContainer, svgWidth, svgHeight, margin, width, height, xAxis);
+    }
+    
+}
+
+
+function drawGraph(data, tooltip, svgContainer, svgWidth, svgHeight, margin, width, height, xAx) {
+    
     svg = svgContainer.append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight)
@@ -293,37 +390,46 @@ function renderGraph(data) {
 
     var xScale = d3.scaleLinear()
         .range([0, width])
-        .domain([d3.min(data, d => d[xAxis]) ,d3.max(data, d => d[xAxis])]);
+        .domain([d3.min(data, d => d[xAx]) ,d3.max(data, d => d[xAx])]);
 
     var yScale = d3.scaleLinear()
         .range([height, 0])
         .domain([0, d3.max(data, d => d["streams"])]);
 
-    svg.selectAll("circle")
+    // brushing and linking
+    var brush = d3.brush()
+        .extent([[0, -margin.top], [svgWidth, svgHeight - margin.bottom]])
+        .on("brush end", updateChart)
+        .on("end", brushFilter);
+
+    svg.append("g")
+        .attr("class", "brush")
+        .call(brush);
+
+    var points = svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
-        .attr("cx", d => xScale(d[xAxis]))
+        .attr("cx", d => xScale(d[xAx]))
         .attr("cy", d => yScale(d["streams"]))
         .attr("r", 2)
         .attr("fill", "steelblue")
         .on("mouseover", function(d) {
-            var pt = d.target.__data__
+            var pt = d.target.__data__;
+            var tloc = findTooltipLoc(d.clientX, d.clientY);
             tooltip.transition()
               .duration(200)
               .style("opacity", 0.9);
             tooltip.html(tooltipHTML(pt)) 
-              .style("left", (d.clientX - 260) + "px")
-              .style("top", (d.clientY - 300) + "px");
+              .style("left", tloc[0] + "px")
+              .style("top", tloc[1] + "px");
         })
         .on("mouseout", function(d) {
-        tooltip.transition()
-            .duration(500)
-            .style("opacity", 0);
-        });
-
-    // track_name": "Track Name",
-    // "artist(s)_name"
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
+        .on("click", handleClick);
 
     // Add X Axis
     svg.append("g")
@@ -334,7 +440,7 @@ function renderGraph(data) {
     svg.append("text")
         .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom - 5) + ")")
         .style("text-anchor", "middle")
-        .text(headerMapping[xAxis]);
+        .text(headerMapping[xAx]);
 
     // Add Y Axis
     svg.append("g")
@@ -342,13 +448,186 @@ function renderGraph(data) {
 
     // Add Y Axis Label
     svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left)
-      .attr("x", 0 - (height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Streams");
-  
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Streams");
+
+    function updateChart() {
+        var brush = d3.brushSelection(this);
+
+        points.attr("class", function(d) {
+            var x = xScale(d[xAx]);
+            var y = yScale(d["streams"]);
+            return brush && brush[0][0] <= x && x <= brush[1][0] &&
+                    brush[0][1] <= y && y <= brush[1][1] ? "selected" : "";
+        });
+    }
+
+    function brushFilter() {
+
+        var tempDataX = dataset.map(function(row) {
+            return parseInt(row[xAx]);
+        });
+
+        var absMinX = d3.min(tempDataX);
+        var absMaxX = d3.max(tempDataX);
+
+        var tempDataY = dataset.map(function(row) {
+            return parseInt(row["streams"]);
+        });
+
+        var absMinY = d3.min(tempDataY);
+        var absMaxY = d3.max(tempDataY);
+
+        var selectedPoints = points.filter(".selected").data();
+        var selectedDataX = selectedPoints.map(function(row) {
+            return parseInt(row[xAx]);
+        });
+
+        var selectedDataY = selectedPoints.map(function(row) {
+            return parseInt(row["streams"]);
+        });
+
+        var selectedMinX = d3.min(selectedDataX);
+        var selectedMaxX = d3.max(selectedDataX);
+
+        var selectedMinY = d3.min(selectedDataY);
+        var selectedMaxY = d3.max(selectedDataY);
+
+        var valsX = [selectedMinX, selectedMaxX];
+        var valsY = [selectedMinY, selectedMaxY];
+
+        $(`#${xAx}Slider`.replace('%', '')).slider({
+            range: true,
+            min: absMinX,
+            max: absMaxX,
+            values: valsX,
+            slide: function(event, ui) {
+            $(`#${xAx}Label`.replace('%', '')).val(ui.values[0] + " - " + ui.values[1]);
+            setFilter(xAx, ui.values);
+            }
+        });
+        $(`#${xAx}Label`.replace('%', '')).val($(`#${xAx}Slider`.replace('%', '')).slider("values", 0) +
+                " - " + $(`#${xAx}Slider`.replace('%', '')).slider("values", 1));
+        setFilter(xAx, valsX);
+
+        $(`#streamsSlider`.replace('%', '')).slider({
+            range: true,
+            min: absMinY,
+            max: absMaxY,
+            values: valsY,
+            slide: function(event, ui) {
+            $(`#streamsLabel`.replace('%', '')).val(ui.values[0] + " - " + ui.values[1]);
+            setFilter("streams", ui.values);
+            }
+        });
+        $(`#streamsLabel`.replace('%', '')).val($(`#streamsSlider`.replace('%', '')).slider("values", 0) +
+                " - " + $(`#streamsSlider`.replace('%', '')).slider("values", 1));
+        setFilter("streams", valsY);
+
+        
+    }
+
+
+    function handleClick(event, d) {
+        // console.log(event);
+        // console.log(d);
+
+        var dstats = [
+            d["released_year"],
+            d["artist_count"],
+            d["bpm"],
+            d["danceability_%"],
+            d["valence_%"],
+            d["energy_%"],
+            d["acousticness_%"],
+            d["instrumentalness_%"],
+            d["liveness_%"],
+            d["speechiness_%"]
+        ]
+
+        songsWithMSE = dataset.map(function (song) {
+            var otherstats = 
+            [
+                song["released_year"],
+                song["artist_count"],
+                song["bpm"],
+                song["danceability_%"],
+                song["valence_%"],
+                song["energy_%"],
+                song["acousticness_%"],
+                song["instrumentalness_%"],
+                song["liveness_%"],
+                song["speechiness_%"]
+            ]
+
+            var mse = MSE(dstats, otherstats)
+
+            songData = cpy(song);
+
+            songData["MSE"] = mse
+
+            return songData;
+        })
+
+        songsWithMSE.sort((a, b) => a.MSE - b.MSE);
+
+        var html = `<div>
+            <h2>Since you like "${d["track_name"]}" by ${d["artist(s)_name"]}, try:</h2>
+        `
+
+        for (var i = 1; i < 11; i++){
+            if(i >= songsWithMSE.length){
+                break;
+            }
+            var songRec = songsWithMSE[i];
+            html += `
+            <div class="songRec">
+                ${i}: "${songRec["track_name"]}" by ${songRec["artist(s)_name"]}
+            </div>
+            `
+
+        }
+
+        html = html + `
+        </div>`
+
+        document.getElementById('songRecommendations').innerHTML = html;
+
+        var button = d3.select("#songRecommendations").append("button")
+            .text("Adjust Filters to See Similar Songs")
+            .on("click", function() {adjustFilters(d)})
+     
+        // console.log(songsWithMSE);
+
+    }
+
+    function findTooltipLoc(x, y) {
+        
+        var tx = (x - 260);
+        var ty;
+        if (y < 100) {
+            ty = y;
+        }
+        else if (y < 200) {
+            ty = y - 100;
+        }
+        else if (y < 300) {
+            ty = y - 200
+        }
+        else if (y < 400) {
+            ty = y - 300
+        }
+        else {
+            ty = y - 400;
+        }
+
+        return [tx, ty]
+
+    }
 }
 
 function tooltipHTML (pt) {
@@ -393,5 +672,21 @@ function tooltipHTML (pt) {
         Speechiness: ${pt["speechiness_%"]}%
         </p>
     </div>`
+}
 
+function MSE(actual, pred) {
+    if (actual.length !== pred.length) {
+      throw new Error('Length mismatch between actual and predicted values.');
+    }
+  
+    var sumSquaredDiff = 0;
+    var n = actual.length;
+  
+    for (var i = 0; i < n; i++) {
+      var squaredDiff = Math.pow(actual[i] - pred[i], 2);
+      sumSquaredDiff += squaredDiff;
+    }
+  
+    var mse = sumSquaredDiff / n;
+    return mse;
 }
