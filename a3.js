@@ -84,8 +84,6 @@ d3.csv("spotify-2023.csv").then(function(data) {
     dataset = dataCleaning(data);
     filteredData = cpy(dataset);
 
-    
-
     populateFilters();
     renderGraph(filteredData);
 
