@@ -84,6 +84,8 @@ d3.csv("spotify-2023.csv").then(function(data) {
     dataset = dataCleaning(data);
     filteredData = cpy(dataset);
 
+    
+
     populateFilters();
     renderGraph(filteredData);
 
@@ -390,11 +392,12 @@ function drawGraph(data, tooltip, svgContainer, svgWidth, svgHeight, margin, wid
 
     var xScale = d3.scaleLinear()
         .range([0, width])
-        .domain([d3.min(data, d => d[xAx]) ,d3.max(data, d => d[xAx])]);
+        .domain([d3.min(data, d => parseInt(d[xAx])) ,d3.max(data, d => parseInt(d[xAx]))]);
 
+    
     var yScale = d3.scaleLinear()
         .range([height, 0])
-        .domain([0, d3.max(data, d => d["streams"])]);
+        .domain([d3.min(data, d => parseInt(d["streams"])), d3.max(data, d => parseInt(d["streams"]))]);
 
     // brushing and linking
     var brush = d3.brush()
@@ -601,7 +604,7 @@ function drawGraph(data, tooltip, svgContainer, svgWidth, svgHeight, margin, wid
             .text("Adjust Filters to See Similar Songs")
             .on("click", function() {adjustFilters(d)})
      
-        // console.log(songsWithMSE);
+        console.log(songsWithMSE);
 
     }
 

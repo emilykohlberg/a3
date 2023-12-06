@@ -71,3 +71,10 @@ select {
     border-radius: 4px;
 }
 
+h1 {
+    margin-bottom: 10px;
+}
+.disclaimer {
+    font-size: 10px;
+    margin-bottom: 20px;
+}
