@@ -1,0 +1,73 @@
+#contentContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.selected {
+    fill: red; /* Change the color for selected points */
+}
+
+
+.allInputs {
+    width: calc(100vw - 1100px);
+}
+
+.dropdown {
+    width: 100%;
+}
+
+.visContainer {
+    width: 1050px;
+}
+
+.rangeLabel {
+    width: 100px;
+}
+
+#streamsLabel {
+    width: 200px;
+}
+
+.tooltip {
+    position: fixed;
+    width: 250px;
+    height: fit-content;
+    pointer-events: none;
+    background-color: rgb(255, 223, 228);
+    padding: 3px;
+    border: 1px rgb(255, 149, 167) solid;
+}
+
+.songRec {
+    font-size: 18px;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.tooltipSongRec {
+    opacity: 0;
+}
+
+.songRec:hover .tooltipSongRec {
+    opacity: 1;
+    background-color: rgb(255, 223, 228);
+    padding: 3px;
+    border: 1px rgb(255, 149, 167) solid;
+}
+
+button {
+    background-color: rgb(170, 218, 255);
+    border: 2px rgb(113, 194, 255);
+    padding: 4px 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+}
+
+select {
+    background-color: rgb(220, 240, 255);
+    border: 2px rgb(160, 214, 255);
+    padding: 4px 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+}
+
